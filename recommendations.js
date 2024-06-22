@@ -15,7 +15,7 @@ const User = require('./database/usersModel');
 
 // Initialize OpenAI configuration
 const openai = new OpenAI({
-    apiKey: "sk-proj-HT4qeDlGHmrn9rDzoQ2bT3BlbkFJP9cGfnNB19nwWf7uWNU3",
+    apiKey: process.env.OPENAI_API_KEY,
 });
 
 
