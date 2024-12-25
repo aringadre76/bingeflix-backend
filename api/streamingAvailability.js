@@ -28,9 +28,9 @@ async function fetchMovieData() {
     }
 }
 */
+const other_API_KEY = '151db67c49msh509c354b0dee5a3p19e99bjsnf78de8b1af13';
+const regular_API_KEY = 'ecbd6ce98amsha24963bf3f9ee3bp19377ejsn9783a8efaa6b';
 
-other_API_KEY = '151db67c49msh509c354b0dee5a3p19e99bjsnf78de8b1af13'
-regular_API_KEY = 'ecbd6ce98amsha24963bf3f9ee3bp19377ejsn9783a8efaa6b'
 
 async function fetchWatchLink(showName) {
   const options = {

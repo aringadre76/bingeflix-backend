@@ -25,7 +25,8 @@
     "openai": "^4.47.1",
     "passport": "^0.5.3",
     "passport-google-oauth20": "^2.0.0",
-    "session-file-store": "^1.5.0"
+    "session-file-store": "^1.5.0",
+    "vercel": "^39.2.2"
   },
   "devDependencies": {
     "nodemon": "^3.1.0"
