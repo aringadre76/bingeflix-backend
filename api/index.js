@@ -316,51 +316,50 @@ app.post('/getLink', async (req, res) => {
 
 app.post('/injectTest', async (req, res) => {
     console.log("I called this endpoint");
-    const { moviesList, linkie } = req.body; // Only get moviesList from the request
+    const { moviesList, linkie } = req.body;
 
-    // Assuming userExport and emailExport are set during authentication and represent the current user
-    const userid =  useridexport;
-    const userName = userExport;  // From earlier session or authentication
-    const email = emailExport;    // From earlier session or authentication
+    // Assuming userExport and emailExport are set during authentication
+    const userid = useridexport;
+    const userName = userExport;
+    const email = emailExport;
 
     console.log('Google ID:', userid);
-    console.log ('Username:', userName);
-    console.log ('Email:', email);
-    console.log(`Movie ${moviesList[0]}`);
-    console.log('url:', linkie);
+    console.log('Username:', userName);
+    console.log('Email:', email);
 
-    console.log('going to do if statement')
-    // if (!Array.isArray(moviesList) || !moviesList.every(movie => movie.title)) {
-    //     return res.status(400).json({ success: false, message: "Each movie must include a title and must be an array" });
-    //     console.log('debug');
-    // }
-    console.log('going to update movie list ...');
+    // Add validation
+    if (!moviesList || !Array.isArray(moviesList)) {
+        return res.status(400).json({ 
+            success: false, 
+            message: "Invalid moviesList format" 
+        });
+    }
+
+    console.log('Movies List:', moviesList);
+    console.log('URL:', linkie);
 
     try {
-        const existingUser = await User.findOne({ $and: [{ userName }, { email }] }); // Ensure both userName and email match
+        const existingUser = await User.findOne({ $and: [{ userName }, { email }] });
 
         if (!existingUser) {
             return res.status(404).json({ success: false, message: "User not found" });
         }
 
-        console.log('going to update movie list in try')
-        // Fetch links and update movies list
-        const updatedMoviesList = await Promise.all(moviesList.map(async movie => {
-            //const link = await fetchWatchLink(movie.title);  // Fetch the streaming link for each movie
-            return {
-                _id: new ObjectId(),  // Generate new ObjectId
-                title: moviesList[0],   // Movie title
-                link: linkie            // Streaming link
-            };
-        }));
+        // Create new movie entry
+        const newMovie = {
+            _id: new ObjectId(),
+            title: moviesList[0],
+            link: linkie
+        };
 
-        // Add the updated movie list to the existing user's movie list
-        existingUser.moviesList.push(...updatedMoviesList);
+        // Add the movie to the existing user's movie list
+        existingUser.moviesList.push(newMovie);
         await existingUser.save();
-        console.log(`Updated ${userName} with movies`);
+        
+        console.log(`Updated ${userName}'s movies list`);
         return res.status(200).json({
             success: true,
-            message: "Movies added to existing user",
+            message: "Movie added successfully",
             user: existingUser
         });
 
