@@ -35,8 +35,13 @@ testStreamingAPI();
 const app = express();
 
 app.use(cors({
-    origin: [process.env.FRONTEND_URL, 'http://localhost:3000'],
-    credentials: true
+    origin: ['http://localhost:3000', 'https://bingeflix-backend.onrender.com'],
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'Origin', 'Accept'],
+    exposedHeaders: ['Content-Range', 'X-Content-Range'],
+    preflightContinue: false,
+    optionsSuccessStatus: 204
 }));
 
 app.use(express.json());
