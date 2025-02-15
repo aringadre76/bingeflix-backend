@@ -15,7 +15,7 @@ connectDB();
 const app = express();
 
 app.use(cors({
-    origin: process.env.FRONTEND_URL,
+    origin: [process.env.FRONTEND_URL, 'http://localhost:3000'],
     credentials: true
 }));
 
@@ -464,8 +464,14 @@ app.get('/api/logout', (req, res) => {
     res.redirect('/');
 });
 
-// const PORT = process.env.PORT || 4000;
-// app.listen(PORT, () => console.log(`Server started on port ${PORT}`));
+app.get('/health', (req, res) => {
+    res.json({ status: 'ok', message: 'Backend is running' });
+});
+
+const PORT = process.env.PORT || 3000;  // Render will provide the PORT env var
+app.listen(PORT, '0.0.0.0', () => {
+    console.log(`Server running on port ${PORT}`);
+});
 
 
 module.exports = { userExport, emailExport };
