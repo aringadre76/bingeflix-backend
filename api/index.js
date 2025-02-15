@@ -11,6 +11,26 @@ require('dotenv').config();
 
 connectDB();
 
+// Test streaming API functionality
+const testStreamingAPI = async () => {
+    try {
+        console.log('🎬 Testing Streaming API...');
+        const testMovie = 'Inception';
+        console.log(`📽️ Fetching streaming info for: ${testMovie}`);
+        
+        const result = await fetchWatchLink(testMovie);
+        console.log('✅ Streaming API Response:', {
+            movieName: result.name,
+            showType: result.showType,
+            streamingLink: result.link
+        });
+    } catch (error) {
+        console.error('❌ Streaming API Error:', error);
+    }
+};
+
+// Run the test
+testStreamingAPI();
 
 const app = express();
 
