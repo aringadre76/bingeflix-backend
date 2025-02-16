@@ -35,7 +35,7 @@ testStreamingAPI();
 const app = express();
 
 app.use(cors({
-    origin: process.env.FRONTEND_URL,
+    origin: ['http://localhost:3000', process.env.FRONTEND_URL],
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization', 'Origin', 'Accept'],
@@ -338,29 +338,30 @@ app.post('/injectTest', async (req, res) => {
     console.log("I called this endpoint");
     const { moviesList, linkie } = req.body;
 
-    // Assuming userExport and emailExport are set during authentication
-    const userid = useridexport;
-    const userName = userExport;
-    const email = emailExport;
+    // Log the request body
+    console.log('Request body:', req.body);
 
-    console.log('Google ID:', userid);
-    console.log('Username:', userName);
-    console.log('Email:', email);
-
-    // Add validation
-    if (!moviesList || !Array.isArray(moviesList)) {
-        return res.status(400).json({ 
-            success: false, 
-            message: "Invalid moviesList format" 
+    // Validate input
+    if (!moviesList || !Array.isArray(moviesList) || !linkie) {
+        return res.status(400).json({
+            success: false,
+            message: "Invalid request format. Requires moviesList array and linkie string"
         });
     }
 
-    console.log('Movies List:', moviesList);
-    console.log('URL:', linkie);
+    // Get user info from session
+    const userName = req.user?.userName || userExport;
+    const email = req.user?.email || emailExport;
+
+    if (!userName || !email) {
+        return res.status(401).json({
+            success: false,
+            message: "User not authenticated"
+        });
+    }
 
     try {
-        const existingUser = await User.findOne({ $and: [{ userName }, { email }] });
-
+        const existingUser = await User.findOne({ userName, email });
         if (!existingUser) {
             return res.status(404).json({ success: false, message: "User not found" });
         }
@@ -372,22 +373,19 @@ app.post('/injectTest', async (req, res) => {
             link: linkie
         };
 
-        // Add the movie to the existing user's movie list
         existingUser.moviesList.push(newMovie);
         await existingUser.save();
         
-        console.log(`Updated ${userName}'s movies list`);
         return res.status(200).json({
             success: true,
             message: "Movie added successfully",
-            user: existingUser
+            movie: newMovie
         });
-
     } catch (error) {
-        console.error("Error during operation:", error);
+        console.error("Error:", error);
         res.status(500).json({
             success: false,
-            message: error.message || "An error occurred"
+            message: error.message
         });
     }
 });
