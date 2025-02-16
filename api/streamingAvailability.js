@@ -42,28 +42,30 @@ async function fetchWatchLink(showName) {
     for (let apiKey of API_KEYS) {
         const options = {
             method: 'GET',
-            url: 'https://streaming-availability.p.rapidapi.com/search/title',
+            url: 'https://streaming-availability.p.rapidapi.com/v2/search/title',
             params: {
                 title: showName,
                 country: 'us',
-                show_type: 'all',
+                type: 'all',
                 output_language: 'en'
             },
             headers: {
-                'x-rapidapi-key': apiKey,
-                'x-rapidapi-host': 'streaming-availability.p.rapidapi.com'
+                'X-RapidAPI-Key': apiKey,
+                'X-RapidAPI-Host': 'streaming-availability.p.rapidapi.com'
             }
         };
 
         try {
             const response = await axios.request(options);
-            var results = response.data.result;
+            var results = response.data.result || [];
             var name = "None", showType = "None", link;
 
             for (var i = 0; i < results.length; i++) {
-                if (results[i].streamingInfo && results[i].streamingInfo.us && results[i].streamingInfo.us[0]) {
-                    link = results[i].streamingInfo.us[0].videoLink || results[i].streamingInfo.us[0].link;
-                    if (link) {
+                if (results[i].streamingInfo && results[i].streamingInfo.us) {
+                    const streamingServices = Object.keys(results[i].streamingInfo.us);
+                    if (streamingServices.length > 0) {
+                        const service = streamingServices[0];
+                        link = results[i].streamingInfo.us[service][0].link;
                         name = results[i].title;
                         showType = results[i].type;
                         break;
@@ -80,7 +82,7 @@ async function fetchWatchLink(showName) {
 
         } catch (error) {
             console.log(`API key ${apiKey.substring(0, 10)}... failed:`, error.message);
-            // If this is the last API key, throw the error
+            // If this is the last API key, return default values
             if (apiKey === API_KEYS[API_KEYS.length - 1]) {
                 console.log("All API keys exhausted");
                 return { 
