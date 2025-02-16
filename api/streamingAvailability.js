@@ -1,4 +1,4 @@
-const https = require('https');
+const axios = require('axios');
 
 // Array of API keys
 const API_KEYS = [
@@ -9,13 +9,16 @@ const API_KEYS = [
 ];
 
 async function fetchWatchLink(showName) {
-    // Try each API key until one works
     for (let apiKey of API_KEYS) {
         const options = {
             method: 'GET',
-            hostname: 'streaming-availability.p.rapidapi.com',
-            port: null,
-            path: `/search/basic?country=us&service=netflix&type=movie&keyword=${encodeURIComponent(showName)}`,
+            url: 'https://streaming-availability.p.rapidapi.com/search/title',
+            params: {
+                title: showName,
+                country: 'us',
+                show_type: 'all',
+                output_language: 'en'
+            },
             headers: {
                 'x-rapidapi-key': apiKey,
                 'x-rapidapi-host': 'streaming-availability.p.rapidapi.com'
@@ -23,26 +26,11 @@ async function fetchWatchLink(showName) {
         };
 
         try {
-            const response = await new Promise((resolve, reject) => {
-                const req = https.request(options, function (res) {
-                    const chunks = [];
+            const response = await axios.request(options);
+            console.log("API Response:", JSON.stringify(response.data, null, 2)); // Debug log
 
-                    res.on('data', function (chunk) {
-                        chunks.push(chunk);
-                    });
-
-                    res.on('end', function () {
-                        const body = Buffer.concat(chunks);
-                        resolve(JSON.parse(body.toString()));
-                    });
-                });
-
-                req.on('error', reject);
-                req.end();
-            });
-
-            if (response.results && response.results.length > 0) {
-                const result = response.results[0];
+            if (response.data.result && response.data.result.length > 0) {
+                const result = response.data.result[0];
                 return {
                     link: result.streamingInfo?.netflix?.us?.link || "https://www.netflix.com",
                     name: result.title || showName,
