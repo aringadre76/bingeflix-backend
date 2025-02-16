@@ -27,23 +27,30 @@ async function fetchWatchLink(showName) {
 
         try {
             const response = await axios.request(options);
-            console.log("API Response:", JSON.stringify(response.data, null, 2)); // Debug log
+            const results = response.data.result;
+            let link = null, name = "None", showType = "None";
 
-            if (response.data.result && response.data.result.length > 0) {
-                const result = response.data.result[0];
-                return {
-                    link: result.streamingInfo?.netflix?.us?.link || "https://www.netflix.com",
-                    name: result.title || showName,
-                    showType: result.type || "movie"
-                };
+            for (let result of results) {
+                if (result.streamingInfo && result.streamingInfo.us) {
+                    const streamingOptions = result.streamingInfo.us;
+                    for (let option of streamingOptions) {
+                        if (option.link) {
+                            link = option.link;
+                            name = result.title;
+                            showType = result.type;
+                            break;
+                        }
+                    }
+                    if (link) break;
+                }
+            }
+
+            if (!link) {
+                link = "Unable to find link!";
             }
 
             console.log(`Successfully fetched data using API key: ${apiKey.substring(0, 10)}...`);
-            return { 
-                link: "https://www.netflix.com", 
-                name: showName, 
-                showType: "movie" 
-            };
+            return { link, name, showType };
 
         } catch (error) {
             console.log(`API key ${apiKey.substring(0, 10)}... failed:`, error.message);
