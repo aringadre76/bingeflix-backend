@@ -321,8 +321,17 @@ app.post('/getLink', async (req, res) => {
 
     try {
         const result = await fetchWatchLink(req.body.searchText);
-        console.log("Search result:", result);
-        res.status(200).json(result);
+        console.log("Raw search result:", result);  // Add this line
+        
+        // Format the response
+        const formattedResult = {
+            name: result.name || req.body.searchText,
+            link: result.link || '',
+            showType: result.showType || 'movie'
+        };
+        
+        console.log("Formatted result:", formattedResult);  // Add this line
+        res.status(200).json(formattedResult);
     } catch (error) {
         console.error('Error fetching link:', error);
         res.status(500).json({ 
