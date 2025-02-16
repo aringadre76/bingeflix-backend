@@ -38,7 +38,8 @@ app.use(cors({
     origin: ['http://localhost:3000', process.env.FRONTEND_URL],
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'Origin', 'Accept'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'Origin', 'Accept', 'Access-Control-Allow-Origin'],
+    exposedHeaders: ['Access-Control-Allow-Origin'],
 }));
 
 app.use(express.json());
@@ -454,32 +455,43 @@ app.post('/removeSport', async (req, res) => {
 
 
 app.post('/removeMovie', async (req, res) => {
+    console.log("\n=== REMOVE MOVIE ENDPOINT ===");
     console.log("Remove movie endpoint called");
     const { movieTitle } = req.body;
 
+    console.log("Attempting to remove movie:", movieTitle);
     const userName = req.user?.userName || userExport;
     const email = req.user?.email || emailExport;
+
+    console.log("User info:", { userName, email });
 
     try {
         const existingUser = await User.findOne({ userName, email });
         if (!existingUser) {
+            console.log("User not found");
             return res.status(404).json({ success: false, message: "User not found" });
         }
 
+        console.log("Current movies list:", existingUser.moviesList);
         const filteredMoviesList = existingUser.moviesList.filter(movie => movie.title !== movieTitle);
+        console.log("Filtered movies list:", filteredMoviesList);
+
         existingUser.moviesList = filteredMoviesList;
         await existingUser.save();
 
         // Update recommendations after removing movie
+        console.log("Updating recommendations...");
         await updateUserRecommendations(userName, email, true);
+        console.log("Recommendations updated");
 
+        console.log("=== END REMOVE MOVIE ENDPOINT ===\n");
         return res.status(200).json({
             success: true,
             message: "Movie removed successfully and recommendations updated",
             user: existingUser
         });
     } catch (error) {
-        console.error("Error:", error);
+        console.error("Error in removeMovie:", error);
         res.status(500).json({
             success: false,
             message: error.message
