@@ -389,9 +389,12 @@ app.post('/injectTest', async (req, res) => {
         existingUser.moviesList.push(newMovie);
         await existingUser.save();
         
+        // Update recommendations after adding movie
+        await updateUserRecommendations(userName, email, true);
+        
         return res.status(200).json({
             success: true,
-            message: "Movie added successfully",
+            message: "Movie added successfully and recommendations updated",
             movie: newMovie
         });
     } catch (error) {
@@ -452,49 +455,34 @@ app.post('/removeSport', async (req, res) => {
 
 app.post('/removeMovie', async (req, res) => {
     console.log("Remove movie endpoint called");
-    const { movieTitle } = req.body;  // Extract the movie title to be removed
+    const { movieTitle } = req.body;
 
-    // Assuming userExport and emailExport are set during authentication
-    const userid = useridexport;  // This should be set from a secure session or token
-    const userName = userExport;  // From earlier session or authentication
-    const email = emailExport;    // From earlier session or authentication
-
-    console.log('Google ID:', userid);
-    console.log('Username:', userName);
-    console.log('Email:', email);
-    console.log('Movie to remove:', movieTitle);
+    const userName = req.user?.userName || userExport;
+    const email = req.user?.email || emailExport;
 
     try {
-        const existingUser = await User.findOne({ $and: [{ userName }, { email }] });
-
+        const existingUser = await User.findOne({ userName, email });
         if (!existingUser) {
-            console.log('User not found');
             return res.status(404).json({ success: false, message: "User not found" });
         }
 
-        // Remove the movie from the user's movie list
         const filteredMoviesList = existingUser.moviesList.filter(movie => movie.title !== movieTitle);
-
-        if (existingUser.moviesList.length === filteredMoviesList.length) {
-            console.log('No movie found to remove');
-            return res.status(404).json({ success: false, message: "Movie not found" });
-        }
-
         existingUser.moviesList = filteredMoviesList;
         await existingUser.save();
-        console.log(`Removed movie '${movieTitle}' from ${userName}'s list`);
+
+        // Update recommendations after removing movie
+        await updateUserRecommendations(userName, email, true);
 
         return res.status(200).json({
             success: true,
-            message: "Movie removed successfully",
+            message: "Movie removed successfully and recommendations updated",
             user: existingUser
         });
-
     } catch (error) {
-        console.error("Error during operation:", error);
+        console.error("Error:", error);
         res.status(500).json({
             success: false,
-            message: error.message || "An error occurred"
+            message: error.message
         });
     }
 });
