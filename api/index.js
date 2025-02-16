@@ -49,9 +49,24 @@ app.use(cookieSession({
     keys: ['key1', 'key2'],  // Replace these keys with your own secret keys
     maxAge: 24 * 60 * 60 * 1000,  // 24 hours
     httpOnly: true,
-    secure: false,  // Set to true if using HTTPS
-    sameSite: 'strict'
+    secure: process.env.NODE_ENV === 'production', // true in production
+    sameSite: 'lax'
 }));
+
+// Add this after cookie-session middleware
+app.use((req, res, next) => {
+    if (req.session && !req.session.regenerate) {
+        req.session.regenerate = (cb) => {
+            cb();
+        };
+    }
+    if (req.session && !req.session.save) {
+        req.session.save = (cb) => {
+            cb();
+        };
+    }
+    next();
+});
 
 app.use(passport.initialize());
 app.use(passport.session());
@@ -299,6 +314,11 @@ app.post('/addSport', async (req, res) => {
 
 app.post('/getLink', async (req, res) => {
     console.log("Received search request for:", req.body.searchText);
+    
+    if (!req.body.searchText) {
+        return res.status(400).json({ message: 'Search text is required' });
+    }
+
     try {
         const result = await fetchWatchLink(req.body.searchText);
         console.log("Search result:", result);
