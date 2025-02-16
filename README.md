@@ -1,129 +1,77 @@
-# Bingeflix Backend
+# BingeFlix Backend
 
-The backend for Bingeflix provides the core functionalities to fetch, manage, and store user-specific data, including movie and sports streaming availability, personalized recommendations, and user details. This service is built using Node.js and MongoDB, leveraging Express for routing and Mongoose for database management.
-
----
-
-## Table of Contents
-
-1. [Features](#features)
-2. [Setup](#setup)
-3. [Project Structure](#project-structure)
-4. [Endpoints](#endpoints)
-5. [Contributing](#contributing)
-
----
+The backend service for BingeFlix, providing movie recommendations, user management, and streaming availability data.
 
 ## Features
 
-- **User Management**: Handles user data, including authentication via Google OAuth.
-- **Streaming Availability**: Fetches availability data for movies and sports across various streaming platforms.
-- **Recommendations**: Provides personalized movie recommendations.
-- **Database Integration**: Utilizes MongoDB with Mongoose schemas to organize user, movie, and sports data.
+- **Authentication**: Google OAuth 2.0 integration
+- **Movie Management**: Add/remove movies from user watchlists
+- **AI Recommendations**: OpenAI-powered movie suggestions
+- **Sports Tracking**: Team management and updates
+- **Streaming Links**: Fetch current streaming availability
 
----
+## Tech Stack
 
-## Setup
+- Node.js & Express
+- MongoDB & Mongoose
+- OpenAI API
+- Google OAuth 2.0
+- Render Deployment
 
-### Prerequisites
+## Local Development
 
-Ensure you have the following installed:
-- Node.js
-- MongoDB
+1. Clone and install:
+```bash
+git clone <repository-url>
+cd bingeflix-backend
+npm install
+```
 
-### Installation
+2. Set up environment variables:
+```env
+MONGODB_URI=your_mongodb_uri
+GOOGLE_CLIENT_ID=your_google_client_id
+GOOGLE_CLIENT_SECRET=your_google_client_secret
+FRONTEND_URL=http://localhost:3000
+OPENAI_API_KEY=your_openai_api_key
+```
 
-1. Clone the repository:  
-   ```bash  
-   git clone <repository-url>  
-   cd bingeflix-backend  
-   ```
+3. Start server:
+```bash
+npm start
+```
 
-2. Install dependencies:  
-   ```bash  
-   npm install  
-   ```
+## API Endpoints
 
-3. Configure environment variables:  
-   Create a `.env` file in the root directory and add your MongoDB URI and Google OAuth credentials:  
-   ```env  
-   MONGO_URI=mongodb://localhost:27017/bingeflix  
-   GOOGLE_CLIENT_ID=<your-client-id>  
-   GOOGLE_CLIENT_SECRET=<your-client-secret>  
-   ```
+### Authentication
+- `GET /auth/google`: Login
+- `GET /auth/google/callback`: OAuth callback
+- `GET /api/logout`: Logout
 
-4. Start the server:  
-   ```bash  
-   node Server.js  
-   ```
+### Movies
+- `POST /getLink`: Get streaming availability
+- `POST /injectTest`: Add to watchlist
+- `POST /removeMovie`: Remove from watchlist
+- `GET /getUserMovies`: Get watchlist
 
-   The server will run on `http://localhost:3000` by default.
-
----
+### Sports
+- `GET /getUserSports`: Get user's teams
+- `POST /removeSport`: Remove team
 
 ## Project Structure
 
-```  
-bingeflix-backend/  
-├── config/  
-│   ├── db.js               # MongoDB connection setup  
-│   └── controller.js       # Functions for handling business logic  
-├── models/  
-│   └── usersModel.js       # Mongoose schemas for users, movies, and sports  
-├── routes/  
-│   └── router.js           # API routes for backend services  
-├── services/  
-│   ├── recommendations.js  # Logic for generating movie recommendations  
-│   ├── sportsAvailability.js  # Fetches sports streaming availability  
-│   └── streamingAvailability.js # Fetches movie streaming availability  
-├── Server.js               # Entry point for the backend server  
-├── index.js                # Base server setup  
-└── package.json            # Project dependencies and scripts  
+```
+bingeflix-backend/
+├── api/
+│   ├── database/          # MongoDB models
+│   ├── config/           # Configuration files
+│   ├── recommendations.js # AI recommendation logic
+│   └── index.js          # Main server file
+└── package.json
 ```
 
----
+## Deployment
 
-## Endpoints
+The backend is deployed on Render and automatically updates when changes are pushed to the main branch.
 
-### Base URL
-`http://localhost:3000`
-
-### User Routes
-- **POST /injectMovie**  
-  - Adds a movie to the user's list.  
-
-- **POST /uninjectMovie**  
-  - Removes a movie from the user's list.  
-
-- **POST /manageMovie**  
-  - Manages movie entries dynamically.  
-
-### Health Check
-- **GET /**  
-  - Verifies if the service is running.  
-
----
-
-## Contributing
-
-1. Fork the repository.  
-2. Create a feature branch:  
-   ```bash  
-   git checkout -b feature-name  
-   ```  
-
-3. Commit changes:  
-   ```bash  
-   git commit -m "Description of changes"  
-   ```  
-
-4. Push the branch:  
-   ```bash  
-   git push origin feature-name  
-   ```  
-
-5. Submit a pull request.  
-
----
-
-For any questions or issues, feel free to open an issue in the repository!
+Visit: [https://bingeflix-backend.onrender.com](https://bingeflix-backend.onrender.com)

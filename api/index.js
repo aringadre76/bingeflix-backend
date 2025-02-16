@@ -35,11 +35,10 @@ testStreamingAPI();
 const app = express();
 
 app.use(cors({
-    origin: ['http://localhost:3000', process.env.FRONTEND_URL],
+    origin: ['http://localhost:3000', 'https://bingeflixstreaming.vercel.app'],
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'Origin', 'Accept', 'Access-Control-Allow-Origin'],
-    exposedHeaders: ['Access-Control-Allow-Origin'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'Origin', 'Accept'],
 }));
 
 app.use(express.json());
