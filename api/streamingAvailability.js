@@ -1,33 +1,4 @@
-const axios = require('axios');
-/*
-const options = {
-  method: 'GET',
-  url: 'https://streaming-availability.p.rapidapi.com/search/title',
-  params: {
-    country: 'us',
-    title: 'Physical 100',
-    output_language: 'en',
-    show_type: 'all'
-  },
-  headers: {
-    'X-RapidAPI-Key': 'ecbd6ce98amsha24963bf3f9ee3bp19377ejsn9783a8efaa6b',
-    'X-RapidAPI-Host': 'streaming-availability.p.rapidapi.com'
-  }
-};
-
-async function fetchMovieData() {
-    try {
-        const response = await axios.request(options);
-        // console.log(response.data);
-
-        const streamingInfo = response.data.result[0].streamingInfo;
-        console.log("Streaming Info for 'Physical 100':", streamingInfo);
-        
-    } catch (error) {
-        console.error(error);
-    }
-}
-*/
+const https = require('https');
 
 // Array of API keys
 const API_KEYS = [
@@ -42,47 +13,52 @@ async function fetchWatchLink(showName) {
     for (let apiKey of API_KEYS) {
         const options = {
             method: 'GET',
-            url: 'https://streaming-availability.p.rapidapi.com/v2/search/title',
-            params: {
-                title: showName,
-                country: 'us',
-                type: 'all',
-                output_language: 'en'
-            },
+            hostname: 'streaming-availability.p.rapidapi.com',
+            port: null,
+            path: `/search/basic?country=us&service=netflix&type=movie&keyword=${encodeURIComponent(showName)}`,
             headers: {
-                'X-RapidAPI-Key': apiKey,
-                'X-RapidAPI-Host': 'streaming-availability.p.rapidapi.com'
+                'x-rapidapi-key': apiKey,
+                'x-rapidapi-host': 'streaming-availability.p.rapidapi.com'
             }
         };
 
         try {
-            const response = await axios.request(options);
-            var results = response.data.result || [];
-            var name = "None", showType = "None", link;
+            const response = await new Promise((resolve, reject) => {
+                const req = https.request(options, function (res) {
+                    const chunks = [];
 
-            for (var i = 0; i < results.length; i++) {
-                if (results[i].streamingInfo && results[i].streamingInfo.us) {
-                    const streamingServices = Object.keys(results[i].streamingInfo.us);
-                    if (streamingServices.length > 0) {
-                        const service = streamingServices[0];
-                        link = results[i].streamingInfo.us[service][0].link;
-                        name = results[i].title;
-                        showType = results[i].type;
-                        break;
-                    }
-                }
-            }
+                    res.on('data', function (chunk) {
+                        chunks.push(chunk);
+                    });
 
-            if (!link) {
-                link = "Unable to find link!";
+                    res.on('end', function () {
+                        const body = Buffer.concat(chunks);
+                        resolve(JSON.parse(body.toString()));
+                    });
+                });
+
+                req.on('error', reject);
+                req.end();
+            });
+
+            if (response.results && response.results.length > 0) {
+                const result = response.results[0];
+                return {
+                    link: result.streamingInfo?.netflix?.us?.link || "https://www.netflix.com",
+                    name: result.title || showName,
+                    showType: result.type || "movie"
+                };
             }
 
             console.log(`Successfully fetched data using API key: ${apiKey.substring(0, 10)}...`);
-            return { link, name, showType };
+            return { 
+                link: "https://www.netflix.com", 
+                name: showName, 
+                showType: "movie" 
+            };
 
         } catch (error) {
             console.log(`API key ${apiKey.substring(0, 10)}... failed:`, error.message);
-            // If this is the last API key, return default values
             if (apiKey === API_KEYS[API_KEYS.length - 1]) {
                 console.log("All API keys exhausted");
                 return { 
@@ -91,7 +67,6 @@ async function fetchWatchLink(showName) {
                     showType: "movie" 
                 };
             }
-            // Otherwise continue to next API key
             continue;
         }
     }
