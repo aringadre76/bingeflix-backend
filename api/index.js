@@ -313,15 +313,18 @@ app.post('/addSport', async (req, res) => {
 
 
 app.post('/getLink', async (req, res) => {
+    console.log("\n=== GET LINK ENDPOINT ===");
     console.log("Received search request for:", req.body.searchText);
     
     if (!req.body.searchText) {
+        console.log("Error: No search text provided");
         return res.status(400).json({ message: 'Search text is required' });
     }
 
     try {
+        console.log("Calling fetchWatchLink for:", req.body.searchText);
         const result = await fetchWatchLink(req.body.searchText);
-        console.log("Raw search result:", result);  // Add this line
+        console.log("Raw fetchWatchLink result:", result);
         
         // Format the response
         const formattedResult = {
@@ -330,10 +333,11 @@ app.post('/getLink', async (req, res) => {
             showType: result.showType || 'movie'
         };
         
-        console.log("Formatted result:", formattedResult);  // Add this line
+        console.log("Sending formatted result:", formattedResult);
+        console.log("=== END GET LINK ENDPOINT ===\n");
         res.status(200).json(formattedResult);
     } catch (error) {
-        console.error('Error fetching link:', error);
+        console.error('Error in getLink endpoint:', error);
         res.status(500).json({ 
             message: 'Error processing your request',
             error: error.message 
