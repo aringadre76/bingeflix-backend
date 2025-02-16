@@ -35,13 +35,10 @@ testStreamingAPI();
 const app = express();
 
 app.use(cors({
-    origin: ['http://localhost:3000', 'https://bingeflix-backend.onrender.com'],
+    origin: process.env.FRONTEND_URL,
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization', 'Origin', 'Accept'],
-    exposedHeaders: ['Content-Range', 'X-Content-Range'],
-    preflightContinue: false,
-    optionsSuccessStatus: 204
 }));
 
 app.use(express.json());
@@ -301,14 +298,17 @@ app.post('/addSport', async (req, res) => {
 
 
 app.post('/getLink', async (req, res) => {
-    console.log("title API route got: "+ req.body['searchText']); // Log the search text received from the front end
+    console.log("Received search request for:", req.body.searchText);
     try {
-        // Await the promise to resolve
-        const { link, name, showType } = await fetchWatchLink(req.body['searchText']);
-        res.status(200).json({ link, name, showType });
+        const result = await fetchWatchLink(req.body.searchText);
+        console.log("Search result:", result);
+        res.status(200).json(result);
     } catch (error) {
         console.error('Error fetching link:', error);
-        res.status(500).json({ message: 'Error processing your request' });
+        res.status(500).json({ 
+            message: 'Error processing your request',
+            error: error.message 
+        });
     }
 });
 
